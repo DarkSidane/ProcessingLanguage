@@ -57,14 +57,9 @@ let is_simulated q p =
         let rec aux1 tree_q tree_p = match tree_q, tree_p with
         (* Reccursion on tree_q *)
                 | Node [], Node [] -> true
-                | Node _, Node [] -> false
-                | Node [], Node _ -> true
+                | Node _, Node [] -> true 
+                | Node [], Node _ -> false
                 | Node (((action1, process1), tree1)::t1), Node (((action2, process2), tree2)::t2) -> 
-                                if action1=action2 then (aux1 tree1 tree2)
-                                else (aux1 (Node t1) tree_p)
-                in let rec aux2 tree_q tree_p = match tree_p with 
-                (* For every sons of p we launch aux1 with *)
-                | Node [] -> true
-                | Node (((action2, process2), tree2)::t2) -> (aux1 tree_q tree_p) && (aux2 tree_q (Node (t2)))
-
-        in aux2 (processToTree q) (processToTree p);;
+                                (if action1=action2 then (aux1 tree1 tree2)
+                                else (aux1 (Node t1) tree_p)) && (aux1 tree_q (Node t2))
+        in aux1 (processToTree q) (processToTree p);;
