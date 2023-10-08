@@ -47,22 +47,24 @@ let m = SubProcess(Coaction "tea",SubProcess(Coaction "coin", Skip));;
 let t = Parallele (u, m);;
 
 (*-- PART 3 --*)
-(* Verify if Q < P, I think we must use tree because Parallele process will be too long to code.  *)
-
-(*-- PART 3 --*)
-(* Verify if Q < P, I think we must use tree because Parallele process will be too long to code.  *)
-let simulate q p = 
-	let rec aux arbre1 arbre2 = match arbre1, arbre2 with 
-		| Node [], Node [] -> true
-		| Node [], _ -> false 
-		| _, Node [] -> false
-		| Node (((action1, process1), tree)::t), Node (((action2, process2), tree2)::t2) -> 
-			(*Same action for the brother of a same node*)
-			((action1 = action2) || (aux (Node (((action1, process1), tree)::t)) (Node t2)))
-			(*And we must verify for the action of the sons*)
-			&& (aux tree tree2)
-	in aux (processToTree p) (processToTree q);;
 let m1 = SubProcess(Action "coin", Plus((Action "tea", Skip), (Action "coffee", Skip)));;
 let m2 = Plus((Action "coin", SubProcess(Action "tea", Skip)), (Action "coin", SubProcess(Action "coffee", Skip)));;
 let m3 = Plus((Action "coin", Skip), (Action "coin", SubProcess(Action "tea", Skip)));; 
 let m4 = SubProcess(Action "coin", SubProcess(Action "tea", Skip));;
+let a = SubProcess (Action "coin", Skip);;
+(* Q < P if for every action a in process P leading to P', the action a is also in process Q leading to Q' and Q' < P' *)
+let is_simulated q p = 
+        let rec aux1 tree_q tree_p = match tree_q, tree_p with
+        (* Reccursion on tree_q *)
+                | Node [], Node [] -> true
+                | Node _, Node [] -> false
+                | Node [], Node _ -> true
+                | Node (((action1, process1), tree1)::t1), Node (((action2, process2), tree2)::t2) -> 
+                                if action1=action2 then (aux1 tree1 tree2)
+                                else (aux1 (Node t1) tree_p)
+                in let rec aux2 tree_q tree_p = match tree_p with 
+                (* For every sons of p we launch aux1 with *)
+                | Node [] -> true
+                | Node (((action2, process2), tree2)::t2) -> (aux1 tree_q tree_p) && (aux2 tree_q (Node (t2)))
+
+        in aux2 (processToTree q) (processToTree p);;
