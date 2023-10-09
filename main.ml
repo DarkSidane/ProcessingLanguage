@@ -8,7 +8,7 @@
 (* Holà, todo recto, *)
 (* Please give me bonus point for speaking spanish *)
 
-(*-- PART 1 --*)
+(*-- PART 2 --*)
 type 's action = Action of 's |Coaction of 's | Silent;; 
 (*'s is the generic token for symbols
   SILENT is the token for SILENT action
@@ -22,7 +22,7 @@ type 's preProcess = ('s action * 's process) and
 type 's tree = Node of ('s preProcess * 's tree) list;; 
 (* Example TEST*)
 
-(*-- PART 2 -- *)
+(*-- PART 3 -- *)
 let rec processToTree proc = match proc with 
 	| Skip -> Node []
 	| SubProcess (a, p) -> Node [(a, p), (processToTree p)]
@@ -46,12 +46,11 @@ let u = SubProcess(Action "tea",SubProcess(Action "coin", Skip));;
 let m = SubProcess(Coaction "tea",SubProcess(Coaction "coin", Skip));;
 let t = Parallele (u, m);;
 
-(*-- PART 3 --*)
+(*-- PART 4 --*)
 let m1 = SubProcess(Action "coin", Plus((Action "tea", Skip), (Action "coffee", Skip)));;
 let m2 = Plus((Action "coin", SubProcess(Action "tea", Skip)), (Action "coin", SubProcess(Action "coffee", Skip)));;
-let m3 = Plus((Action "coin", Skip), (Action "coin", SubProcess(Action "tea", Skip)));; 
-let m4 = SubProcess(Action "coin", SubProcess(Action "tea", Skip));;
-let a = SubProcess (Action "coin", Skip);;
+(*let m3 = Plus((Action "coin", Skip), (Action "coin", SubProcess(Action "tea", Skip)));; 
+let m4 = SubProcess(Action "coin", SubProcess(Action "tea", Skip));;*)
 (* Q < P if for every action a in process P leading to P', the action a is also in process Q leading to Q' and Q' < P' *)
 let is_simulated q p = 
         let rec aux1 tree_q tree_p = match tree_q, tree_p with
@@ -63,3 +62,18 @@ let is_simulated q p =
                                 (if action1=action2 then (aux1 tree1 tree2)
                                 else (aux1 (Node t1) tree_p)) && (aux1 tree_q (Node t2))
         in aux1 (processToTree q) (processToTree p);;
+(*-- PART 5 --*)
+(* Now, we want to know if Q equivalent to P*)
+let equivalent q p = 
+        let rec aux1 tree_q tree_p = match tree_q, tree_p with
+        (* Reccursion on tree_q *)
+                | Node [], Node [] -> true
+                | Node _, Node [] -> true 
+                | Node [], Node _ -> false
+                | Node (((action1, process1), tree1)::t1), Node (((action2, process2), tree2)::t2) -> 
+                                (if action1=action2 then (aux1 tree1 tree2)
+                                else ((aux1 (Node t1) tree_p)&&(aux1 tree_q (Node t2)))) && (aux1 tree_q (Node t2)) && (aux1 (Node t1) tree_p)
+        in aux1 (processToTree q) (processToTree p);;
+(*test variable *)
+let p = Parallele (SubProcess(Action "coin", Skip), SubProcess(Action "tea", Skip));;
+let q = Parallele (SubProcess(Action "tea", Skip), SubProcess(Action "coin", Skip));;
