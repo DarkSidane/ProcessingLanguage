@@ -5,7 +5,7 @@
  *)
 
 (* Hello guys, today we are going to do the homework of functionnal programming. *)
-(* Holà, todo recto, *)
+(* Holà, como estas. todo recto esta mi  *)
 (* Please give me bonus point for speaking spanish *)
 
 (*-- PART 2 --*)
@@ -71,9 +71,18 @@ let equivalent q p =
         let rec aux1 tree_q tree_p = match tree_q, tree_p with
         (* Reccursion on tree_q *)
                 | Node [], Node [] -> true
-                | Node _, Node [] -> true 
-                | Node [], Node _ -> false
-                | Node (((action1, process1), tree1)::t1), Node (((action2, process2), tree2)::t2) -> 
-                                (if action1=action2 then (aux1 tree1 tree2)
-                                else ((aux1 (Node t1) tree_p)&&(aux1 tree_q (Node t2)))) && (aux1 tree_q (Node t2)) && (aux1 (Node t1) tree_p)
+                | Node [], _ -> false 
+                | _, Node [] -> false
+                | Node (((a1, _), tree1)::t1), Node (((a2, _), tree2)::t2) ->
+                                ((if a1 = a2 then 
+                                        (aux1 tree1 tree2)
+                                else 
+                                        false)) || (aux1 tree_q (Node t2))
+                                && (aux1 (Node t1) tree_p)
+
         in aux1 (processToTree q) (processToTree p);;
+
+(* Thank you for your attention, we hope you enjoyed our homework. *)
+(* We are waiting for your feedbacks. *)
+(* Have a nice day. *)
+(* Adios amigos. *)
