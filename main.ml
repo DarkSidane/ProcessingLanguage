@@ -44,27 +44,27 @@ let u = SubProcess(Action "tea",SubProcess(Action "coin", Skip));;
 let m = SubProcess(Coaction "tea",SubProcess(Coaction "coin", Skip));;
 let t = Parallele (u, m);;
 
-let b1 = SubProcess(Action "coin", Skip);;
-let b2 = SubProcess(Coaction "coin", Skip);;
-let t2 = Parallele (b1, b2);;
-
-
 (*-- PART 4 --*)
 let m1 = SubProcess(Action "coin", Plus((Action "tea", Skip), (Action "coffee", Skip)));;
 let m2 = Plus((Action "coin", SubProcess(Action "tea", Skip)), (Action "coin", SubProcess(Action "coffee", Skip)));;
-(*let m3 = Plus((Action "coin", Skip), (Action "coin", SubProcess(Action "tea", Skip)));; 
-let m4 = SubProcess(Action "coin", SubProcess(Action "tea", Skip));;*)
+(* Example PART 5*)
+let m3 = Plus((Action "coin", Skip), (Action "coin", SubProcess(Action "tea", Skip)));; 
+let m4 = SubProcess(Action "coin", SubProcess(Action "tea", Skip));;
 (* Q < P if for every action a in process P leading to P', the action a is also in process Q leading to Q' and Q' < P' *)
 let is_simulated q p = 
         let rec aux1 tree_q tree_p = match tree_q, tree_p with
         (* Reccursion on tree_q *)
-                | Node [], Node [] -> true
-                | Node _, Node [] -> true 
-                | Node [], Node _ -> false
-                | Node (((action1, process1), tree1)::t1), Node (((action2, process2), tree2)::t2) -> 
-                                (if action1=action2 then (aux1 tree1 tree2)
-                                else (aux1 (Node t1) tree_p)) && (aux1 tree_q (Node t2))
+                | Node [], _ -> true
+                | _, Node [] -> false
+                | Node (((a1, _), tree1)::t1), Node (((a2, _), tree2)::t2) ->
+                                ((if a1 = a2 then 
+                                        (aux1 tree1 tree2)
+                                else 
+                                        false) || (aux1 tree_q (Node t2)))
+                                && (aux1 (Node t1) tree_p)
+
         in aux1 (processToTree q) (processToTree p);;
+
 (*-- PART 5 --*)
 (* Now, we want to know if Q equivalent to P*)
 let equivalent q p = 
@@ -77,6 +77,3 @@ let equivalent q p =
                                 (if action1=action2 then (aux1 tree1 tree2)
                                 else ((aux1 (Node t1) tree_p)&&(aux1 tree_q (Node t2)))) && (aux1 tree_q (Node t2)) && (aux1 (Node t1) tree_p)
         in aux1 (processToTree q) (processToTree p);;
-(*test variable *)
-let p = Parallele (SubProcess(Action "coin", Skip), SubProcess(Action "tea", Skip));;
-let q = Parallele (SubProcess(Action "tea", Skip), SubProcess(Action "coin", Skip));;
