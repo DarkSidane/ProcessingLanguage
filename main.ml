@@ -24,27 +24,30 @@ type 's tree = Node of ('s preProcess * 's tree) list;;
 
 (*-- PART 3 -- *)
 let rec processToTree proc = match proc with 
-	| Skip -> Node []
+	| Skip | Parallele (Skip, Skip) -> Node []
+	| Parallele (Skip, SubProcess(a, p)) | Parallele (SubProcess(a, p), Skip) -> Node [(a, Skip), Node []]
 	| SubProcess (a, p) -> Node [(a, p), (processToTree p)]
 	| Plus ((a, p), (b, q)) -> Node [(a, p), (processToTree p); (b, q), (processToTree q)]
-	| Parallele (Skip, Skip) -> Node [] 
-	| Parallele (Skip, SubProcess(a, p)) -> Node [(a, Skip), Node []]
-	| Parallele (SubProcess(a, p), Skip) -> Node [(a, Skip), Node []]
 	| Parallele (p1, p2) ->
 		let rec aux1 arbre1 proRef = match arbre1 with 
 			| Node [] -> []
-			(*| Node (((a,p), tree)::t) -> ((a, Parallele (p, proRef)), tree)::(aux1 (Node t) proRef)*)
 			| Node (((a,p), tree)::t) -> ((a, Parallele (p, proRef)), processToTree(Parallele (p, proRef)))::(aux1 (Node t) proRef)
-			(*| Node (((a,p), Node [])::t) -> ((a, Parallele (p, proRef)), Node [])::(aux1 (Node t) proRef)
-			| Node (((a,p), (Node (afils, pfils)::tfils))::t) -> ((a, Parallele (p, proRef)), )::(aux1 (Node t) proRef)*)
 		in let rec aux2 pro1 pro2 = match pro1, pro2 with 
-			| SubProcess (a, p), SubProcess (b, q) -> [(Silent, Parallele (p, q)), processToTree (Parallele (p, q))]
+			| SubProcess (Action s1, p), SubProcess (Coaction s2, q) when s1 = s2-> 
+                                        [(Silent, Parallele (p, q)), processToTree (Parallele (p, q))]
+			| SubProcess (Coaction s1, p), SubProcess (Action s2, q) when s1 = s2-> 
+                                        [(Silent, Parallele (p, q)), processToTree (Parallele (p, q))]
 			| _ -> []
 		in Node ((aux1 (processToTree(p2)) p1)@(aux1 (processToTree(p1)) p2)@(aux2 p1 p2));;
 
 let u = SubProcess(Action "tea",SubProcess(Action "coin", Skip));;
 let m = SubProcess(Coaction "tea",SubProcess(Coaction "coin", Skip));;
 let t = Parallele (u, m);;
+
+let b1 = SubProcess(Action "coin", Skip);;
+let b2 = SubProcess(Coaction "coin", Skip);;
+let t2 = Parallele (b1, b2);;
+
 
 (*-- PART 4 --*)
 let m1 = SubProcess(Action "coin", Plus((Action "tea", Skip), (Action "coffee", Skip)));;
